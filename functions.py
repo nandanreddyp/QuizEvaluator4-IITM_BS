@@ -55,7 +55,7 @@ def answerCSV(file):
                         row = s['text'].split(' ')
                         Question_id = row[7];Question_marks=0;Question_type=row[11];COptions=[];WOptions=[]
                     if 'Correct Marks' in s['text']:
-                        Question_marks = s['text'][16]
+                        Question_marks = s['text'].split()[3]
                     if Question_type in ['MCQ','MSQ']:
                         if s['text'][-2:]=='. ':
                             if color(s['color'])=='Green':
