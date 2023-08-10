@@ -38,10 +38,26 @@ def answerCSV(file):
             write.writerow([line[0:-8]])
             break
     #questions data saving
-    for i in range(0,4):
+    Question_id=None;Question_type=None;COptions=[];WOptions=[]
+    for i in range(len(doc)):
         page = doc[i]
         blocks = page.get_text("dict", flags=11)["blocks"]
         for b in blocks:  # iterate through the text blocks
             for l in b["lines"]:  # iterate through the text lines
                 for s in l["spans"]:  # iterate through the text spans
-                    write.writerow([s['text']])
+                    # write.writerow([s['text']])
+                    # print(s["text"], color(s['color']), sep=' ') # color converter, main color code in binary
+                    if ('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']:
+                        if COptions != []:
+                            write.writerow([Question_id,Question_type,'$'.join(COptions),'$'.join(WOptions)])
+                        row = s['text'].split(' ')
+                        Question_id = row[7];Question_type = row[11];COptions = [];WOptions = []
+                    if Question_type in ['MCQ','MSQ']:
+                        if s['text'][-2:]=='. ':
+                            if color(s['color'])=='Green':
+                                COptions.append(s['text'][:-2])
+                            elif color(s['color'])=='Red':
+                                WOptions.append(s['text'][:-2])
+                    elif Question_type == 'SA':
+                        if color(s['color'])=='Green':
+                            COptions.append(s['text'])

@@ -1,7 +1,7 @@
 # importing necessary
 import os, functions
 
-# GETTING FILES FROM USER AND WRITING CSV
+# GETTING FILES FROM USER AND WRITING CSV with them
 print('\n*****************#_________Welcome to QuizEvaluator!_________#********************')
 print('Note: ONLY Answer Key & Transcript should be in \'pdf files\' folder with original name downloaded from IITM\n')
 folder_path = "./pdf files"
@@ -19,6 +19,7 @@ functions.transCSV(Transcript)
 functions.answerCSV(AnswerKey)
 
 #EVALUATING TRANSCRIPT BY ANSWER KEY
+
 
 
 
