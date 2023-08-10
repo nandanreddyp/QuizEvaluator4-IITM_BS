@@ -100,9 +100,10 @@ def evaluate(akey, trans):
     #iterating for evaluation
     Course = None
     for row in Answ:
+        if row.split(',')[0] in resp:
+            print(row)
         if len(row.split(','))==1:
             Course = row
             print(Course)
         #print(row.split(','))
-        if row.split(',')[0] in resp:
-            print(row)
+
