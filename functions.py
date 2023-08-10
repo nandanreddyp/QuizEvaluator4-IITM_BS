@@ -38,7 +38,7 @@ def answerCSV(file):
             write.writerow([line[0:-8]])
             break
     #questions data saving
-    Question_id=None;Question_type=None;COptions=[];WOptions=[]
+    Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
     for i in range(len(doc)):
         page = doc[i]
         blocks = page.get_text("dict", flags=11)["blocks"]
@@ -49,11 +49,13 @@ def answerCSV(file):
                     # print(s["text"], color(s['color']), sep=' ') # color converter, main color code in binary
                     if (('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']):
                         if Question_type in ['MSQ','MCQ']:
-                            write.writerow([Question_id,Question_type,'$'.join(COptions),'$'.join(WOptions)])
+                            write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
                         elif Question_type in ['SA']:
-                            write.writerow([Question_id,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
+                            write.writerow([Question_id,Question_marks,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
                         row = s['text'].split(' ')
-                        Question_id = row[7];Question_type = row[11];COptions = [];WOptions = []
+                        Question_id = row[7];Question_marks=0;Question_type=row[11];COptions=[];WOptions=[]
+                    if 'Correct Marks' in s['text']:
+                        Question_marks = s['text'][16]
                     if Question_type in ['MCQ','MSQ']:
                         if s['text'][-2:]=='. ':
                             if color(s['color'])=='Green':
@@ -66,6 +68,6 @@ def answerCSV(file):
                     #end page qeustion saving case:
                     if (i== len(doc)-1 and blocks.index(b)==len(blocks)-1):
                         if Question_type in ['MSQ','MCQ']:
-                            write.writerow([Question_id,Question_type,'$'.join(COptions),'$'.join(WOptions)])
+                            write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
                         elif Question_type in ['SA']:
-                            write.writerow([Question_id,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
+                            write.writerow([Question_id,Question_marks,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])

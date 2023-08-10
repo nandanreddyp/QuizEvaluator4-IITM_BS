@@ -10,7 +10,7 @@ for item in items:
 
 doc = fitz.open(Answers)
 f = open('temp.txt','w')
-qcount=0;Question_id=None;Question_type=None;COptions=[];WOptions=[]
+qcount=0;Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
 for i in range(224,len(doc)):
 #for i in range(len(doc)):
     page = doc[i]
@@ -19,12 +19,14 @@ for i in range(224,len(doc)):
         for l in b["lines"]:  # iterate through the text lines
             for s in l["spans"]:  # iterate through the text spans
                 # print(s['text'])
-                print(s["text"], color(s['color']),blocks.index(b), sep=' ') # color converter, main color code in binary
-                if ('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']:
+                # print(s["text"], color(s['color']),blocks.index(b), sep=' ') # color converter, main color code in binary
+                if 'Question Id' in s['text'] and 'COMPREHENSION' not in s['text']:
                     print(Question_id,Question_type,COptions,WOptions)
                     qcount+=1
                     row = s['text'].split(' ')
-                    Question_id = row[7];Question_type = row[11];COptions = [];WOptions = []
+                    Question_id = row[7];Question_marks=0;Question_type = row[11];COptions = [];WOptions = []
+                if 'Correct Marks' in s['text']:
+                    Question_marks = s['text'][16]
                 if Question_type in ['MCQ','MSQ']:
                     if s['text'][-2:]=='. ':
                         if color(s['color'])=='Green':
