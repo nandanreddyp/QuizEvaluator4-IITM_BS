@@ -48,6 +48,7 @@ def answerCSV(file):
             write.writerow([line[0:-8]])
             break
     #questions data saving
+    Qcount=0
     Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
     for i in range(len(doc)):
         page = doc[i]
@@ -55,55 +56,82 @@ def answerCSV(file):
         for b in blocks:  # iterate through the text blocks
             for l in b["lines"]:  # iterate through the text lines
                 for s in l["spans"]:  # iterate through the text spans
-                    # write.writerow([s['text']])
-                    # print(s["text"], color(s['color']), sep=' ') # color converter, main color code in binary
-                    if int(s['size'])==18:
-                        write.writerow([s['text']])
-                    if (('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']):
+                    if (i== len(doc)-1 and blocks.index(b)==len(blocks)-1 and COptions!=[]) or (color(s['color']) not in ['Green','Red'] and COptions!=[]):
                         if Question_type in ['MSQ','MCQ']:
                             write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
                         elif Question_type in ['SA']:
                             write.writerow([Question_id,Question_marks,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
+                        Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
+                    if s['size']==18 and s['text'][:5]!='Group':
+                        write.writerow([s['text']])
+                    if ('Question Id' in s['text'] and 'COMPREHENSION' not in s['text']):
+                        Qcount+=1
                         row = s['text'].split(' ')
                         Question_id = row[7];Question_marks=0;Question_type=row[11];COptions=[];WOptions=[]
+                    # options appending
+                    if Question_type=='SA' and color(s['color'])=='Green':
+                        COptions.append(s['text'])
+                    if s['text'][-2:]=='. ':
+                        if color(s['color'])=='Green':
+                            COptions.append(s['text'][:-2])
+                        elif color(s['color'])=='Red':
+                            WOptions.append(s['text'][:-2])
                     if 'Correct Marks' in s['text']:
                         Question_marks = s['text'].split()[3]
-                    if Question_type in ['MCQ','MSQ']:
-                        if s['text'][-2:]=='. ':
-                            if color(s['color'])=='Green':
-                                COptions.append(s['text'][:-2])
-                            elif color(s['color'])=='Red':
-                                WOptions.append(s['text'][:-2])
-                    elif Question_type == 'SA':
-                        if color(s['color'])=='Green':
-                            COptions.append(s['text'])
-                    #end page qeustion saving case:
-                    if (i== len(doc)-1 and blocks.index(b)==len(blocks)-1):
-                        if Question_type in ['MSQ','MCQ']:
-                            write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
-                        elif Question_type in ['SA']:
-                            write.writerow([Question_id,Question_marks,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
-def evaluate(akey, trans):
-    #getting necessary info from Answers
-    Trans = open(trans,'r')
-    stuent_name = Trans.readline()
-    Tkey = Trans.readline()
-    resp = Trans.readlines()
-    resp = {line.split(',')[0]:line.split(',')[1] for line in resp}
-    #geting necessary info from Answers
-    Answ = open(akey,'r')
-    Akey = Answ.readline()
-    Answ.readline()
-    #checking if keys of both files mathing:
-    if Akey==Tkey: print(f'Answer key code: {Akey.split()[3]} matching with Transcript code: {Tkey.split()[3]}')
-    else: print('Please check the pdf files you given and their shift code!');sys.exit()
-    #iterating for evaluation
-    Course = None
-    for row in Answ:
-        if row.split(',')[0] in resp:
-            print(row)
-        if len(row.split(','))==1:
-            Course = row
-            print(Course)
-        #print(row.split(','))
+    # print(f'total questions (246): {Qcount}')
+def Calculate(Course, Sub, Answ):
+    if Sub[0][0] not in Answ:
+        return None
+    Tmarks=0;Smarks=0
+    for ques in Sub:
+        Tmarks+=float(ques[1])
+        if ques[0] in Answ:
+            if ques[2]=='SA':
+                if len(ques[3].split(':'))==1:
+                    if ques[3]==Answ[ques[0]]:
+                        Smarks+=float(ques[1])
+                else:
+                    # print(float(ques[3].split(':')[0]),float(Answ[ques[0]]),float(ques[3].split(':')[1]))
+                    if float(ques[3].split(':')[0]) <= float(Answ[ques[0]]) <= float(ques[3].split(':')[1]):
+                        Smarks+=float(ques[1])
+            else:
+                count=0;total=len(ques[3].split('$'))
+                for ans in Answ[ques[0]].split('$'):
+                    if ans in ques[4].split('$'):
+                        count=0; break
+                    if ans in ques[3].split('$'):
+                        count+=1
+                Smarks+=(count/total)*float(ques[1])
+    marks = (Smarks/Tmarks)*100
+    print("{:<10}: {:>3}".format(Course, marks))
+    
 
+def evaluate(akey, trans):
+    Trans = open(trans,'r')
+    Akey  = open(akey, 'r')
+    # getting necessary info from Answers
+    Name  = Trans.readline()
+    tkey  = Trans.readline()
+    akey  = Akey.readline()
+    if tkey!=akey:
+        print(f'Code of Answer key: {akey} and Transcript key: {tkey} Not matching. Please upload correct ones.')
+        sys.exit()
+    # evaluation
+    Akey = Akey.readlines()
+    Akey = [line.strip() for line in Akey]
+    resp = {}
+    for line in Trans:
+        line = line.strip()
+        resp[line.split(',')[0]]=line.split(',')[1]
+    # evaluation
+    Course=None;Answerkey=[]
+    for line in Akey:
+        line = line.strip()
+        if len(line.split(','))==1 or Akey.index(line)==len(Akey)-1:
+            if Akey.index(line)!=0:
+                Calculate(Course, Answerkey, resp)
+            Course = line; Answerkey=[]
+        else:
+            Answerkey.append(line.split(','))
+        
+        
