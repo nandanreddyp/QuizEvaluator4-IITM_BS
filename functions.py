@@ -1,5 +1,15 @@
-import fitz
-import csv
+import csv, subprocess, sys
+try:
+    import fitz
+except ImportError:
+    print("PyMuPDF is not installed. Installing now...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "PyMuPDF"])
+        print("PyMuPDF installed successfully.")
+        import fitz
+    except subprocess.CalledProcessError:
+        print("Failed to install PyMuPDF.\nPlease use internet to resolve this issue.")
+        sys.exit()
 
 def transCSV(file):
     responses = open('./csv files/trans.txt','w',newline='')
@@ -47,6 +57,8 @@ def answerCSV(file):
                 for s in l["spans"]:  # iterate through the text spans
                     # write.writerow([s['text']])
                     # print(s["text"], color(s['color']), sep=' ') # color converter, main color code in binary
+                    if int(s['size'])==18:
+                        write.writerow([s['text']])
                     if (('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']):
                         if Question_type in ['MSQ','MCQ']:
                             write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
@@ -71,3 +83,26 @@ def answerCSV(file):
                             write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
                         elif Question_type in ['SA']:
                             write.writerow([Question_id,Question_marks,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
+def evaluate(akey, trans):
+    #getting necessary info from Answers
+    Trans = open(trans,'r')
+    stuent_name = Trans.readline()
+    Tkey = Trans.readline()
+    resp = Trans.readlines()
+    resp = {line.split(',')[0]:line.split(',')[1] for line in resp}
+    #geting necessary info from Answers
+    Answ = open(akey,'r')
+    Akey = Answ.readline()
+    Answ.readline()
+    #checking if keys of both files mathing:
+    if Akey==Tkey: print(f'Answer key code: {Akey.split()[3]} matching with Transcript code: {Tkey.split()[3]}')
+    else: print('Please check the pdf files you given and their shift code!');sys.exit()
+    #iterating for evaluation
+    Course = None
+    for row in Answ:
+        if len(row.split(','))==1:
+            Course = row
+            print(Course)
+        #print(row.split(','))
+        if row.split(',')[0] in resp:
+            print(row)

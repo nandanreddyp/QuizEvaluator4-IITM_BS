@@ -24,33 +24,14 @@ else:
     print("Answer key location: %s\nTranscript location: %s" % (AnswerKey, Transcript))
 functions.transCSV(Transcript)
 functions.answerCSV(AnswerKey)
-print('\nSuccessfully read fies and made csv files')
+print('\nSuccessfully read fies and made csv files\n')
+
 #EVALUATING TRANSCRIPT BY ANSWER KEY
+functions.evaluate('./csv files/qp.txt','./csv files/trans.txt')
 
 
 
 
 
 
-
-
-
-
-
-
-# import fitz
-# def color(num):
-#     return 'Green' if num == 32512 else 'Red' if num == 16711680 else 'Other'
-
-# doc = fitz.open('./pdf files/qp.pdf')
-# for i in range(0,4):
-#     page = doc[i]
-#     blocks = page.get_text("dict", flags=11)["blocks"]
-#     for b in blocks:  # iterate through the text blocks
-#         for l in b["lines"]:  # iterate through the text lines
-#             for s in l["spans"]:  # iterate through the text spans
-#                 print("")
-#                 print(s["text"], color(s['color']), sep='\n') # color converter, main color code in binary
-
-
-# Asking if student wants to delete unnesessary files
+#Delte csv files
