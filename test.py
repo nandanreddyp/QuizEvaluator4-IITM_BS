@@ -11,14 +11,15 @@ for item in items:
 doc = fitz.open(Answers)
 f = open('temp.txt','w')
 qcount=0;Question_id=None;Question_type=None;COptions=[];WOptions=[]
-for i in range(40,46):
+for i in range(224,len(doc)):
 #for i in range(len(doc)):
     page = doc[i]
     blocks = page.get_text("dict", flags=11)["blocks"]
     for b in blocks:  # iterate through the text blocks
         for l in b["lines"]:  # iterate through the text lines
             for s in l["spans"]:  # iterate through the text spans
-                # print(s["text"], color(s['color']), sep=' ') # color converter, main color code in binary
+                # print(s['text'])
+                print(s["text"], color(s['color']),blocks.index(b), sep=' ') # color converter, main color code in binary
                 if ('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']:
                     print(Question_id,Question_type,COptions,WOptions)
                     qcount+=1

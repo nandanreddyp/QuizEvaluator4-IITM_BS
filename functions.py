@@ -47,9 +47,11 @@ def answerCSV(file):
                 for s in l["spans"]:  # iterate through the text spans
                     # write.writerow([s['text']])
                     # print(s["text"], color(s['color']), sep=' ') # color converter, main color code in binary
-                    if ('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']:
-                        if COptions != []:
+                    if (('Question Id' in s['text']) and 'COMPREHENSION' not in s['text']):
+                        if Question_type in ['MSQ','MCQ']:
                             write.writerow([Question_id,Question_type,'$'.join(COptions),'$'.join(WOptions)])
+                        elif Question_type in ['SA']:
+                            write.writerow([Question_id,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
                         row = s['text'].split(' ')
                         Question_id = row[7];Question_type = row[11];COptions = [];WOptions = []
                     if Question_type in ['MCQ','MSQ']:
@@ -61,3 +63,9 @@ def answerCSV(file):
                     elif Question_type == 'SA':
                         if color(s['color'])=='Green':
                             COptions.append(s['text'])
+                    #end page qeustion saving case:
+                    if (i== len(doc)-1 and blocks.index(b)==len(blocks)-1):
+                        if Question_type in ['MSQ','MCQ']:
+                            write.writerow([Question_id,Question_type,'$'.join(COptions),'$'.join(WOptions)])
+                        elif Question_type in ['SA']:
+                            write.writerow([Question_id,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
