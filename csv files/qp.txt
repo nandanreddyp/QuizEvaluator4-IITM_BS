@@ -1,2 +1,197 @@
-Qid,Type,marks,Cans,Wans
-asdf,3,"['a', 'b', 'c', 'd']"
+IIT M DIPLOMA AN4 EXAM QPD4
+"Indian Institute of Technology, Madras - BS in Data Science and Applications"
+Notations :
+1.Options shown in
+ green 
+color and with 
+ icon are correct.
+2.Options shown in
+ red 
+color and with 
+ icon are incorrect.
+Question Paper Name :
+IIT M DIPLOMA AN4 EXAM QPD4 06 Aug 
+2023
+Subject Name :
+2023 Aug: IIT M DIPLOMA AN4 EXAM QPD4
+Creation Date :
+2023-08-01 17:28:49
+Duration :
+240
+Total Marks :
+682
+Display Marks:
+Yes
+Share Answer Key With Delivery Engine :
+Yes
+Actual Answer Key :
+Yes
+Calculator :
+Scientific
+Magnifying Glass Required? :
+No
+Ruler Required? :
+No
+Eraser Required? :
+No
+Scratch Pad Required? :
+No
+Rough Sketch/Notepad Required? :
+No
+Protractor Required? :
+No
+Show Watermark on Console? :
+Yes
+Highlighter :
+No
+Auto Save on Console?
+Yes
+Change Font Color :
+No
+Change Background Color :
+No
+Change Theme :
+No
+Help Button :
+No
+Show Reports :
+No
+Show Progress Bar :
+No
+ 
+ 
+ 
+ 
+Group I
+Group Number :
+1
+Group Id :
+64065313871
+Group Maximum Duration :
+0
+Group Minimum Duration :
+90
+Show Attended Group? :
+No
+Edit Attended Group? :
+No
+Break time :
+0
+Group Marks :
+682
+Is this Group for Examiner? :
+No
+Examiner permission :
+Cant View
+Show Progress Bar? :
+No
+Revisit allowed for group Instructions? :
+Yes
+Maximum Instruction Time :
+0
+Minimum Instruction Time :
+0
+Group Time In :
+Minutes
+Navigate To Group Summary From Last Question? :
+No
+Disable Submit Button During Assessment? :
+No
+Section Selection Time? :
+0
+No of Optional sections to be attempted :
+0
+ 
+ 
+ 
+ 
+Statistics1
+Section Id :
+64065339737
+Section Number :
+1
+Section type :
+Online
+Mandatory or Optional :
+Mandatory
+Number of Questions :
+11
+Number of Questions to be attempted :
+11
+Section Marks :
+40
+Display Number Panel :
+Yes
+Group All Questions :
+No
+Enable Mark as Answered Mark for Review and 
+Clear Response :
+Yes
+Maximum Instruction Time :
+0
+Sub-Section Number :
+1
+Sub-Section Id :
+64065384561
+Question Shuffling Allowed :
+No
+Is Section Default? :
+null
+ 
+ 
+Question Number : 1 Question Id : 640653587427 Question Type : MCQ Is Question 
+Mandatory : No Calculator : None Response Time : N.A Think Time : N.A Minimum Instruction 
+Time : 0
+Correct Marks : 0
+Question Label : Multiple Choice Question
+THIS IS QUESTION PAPER FOR THE SUBJECT 
+"""FOUNDATION LEVEL : STATISTICS FOR DATA "
+"SCIENCE I (COMPUTER BASED EXAM) """
+ 
+ 
+ARE YOU SURE YOU HAVE TO WRITE EXAM FOR THIS SUBJECT? 
+CROSS CHECK YOUR HALL TICKET TO CONFIRM THE SUBJECTS TO BE WRITTEN. 
+ 
+"(IF IT IS NOT THE CORRECT SUBJECT, PLS CHECK THE SECTION AT THE TOP FOR THE SUBJECTS "
+REGISTERED BY YOU)
+Options :
+6406531959839. 
+ YES
+6406531959840. 
+ NO
+Sub-Section Number :
+2
+Sub-Section Id :
+64065384562
+Question Shuffling Allowed :
+Yes
+Is Section Default? :
+null
+ 
+ 
+Question Number : 2 Question Id : 640653587428 Question Type : MCQ Is Question 
+Mandatory : No Calculator : None Response Time : N.A Think Time : N.A Minimum Instruction 
+Time : 0
+Correct Marks : 4
+Question Label : Multiple Choice Question
+"Out of 8 boys and 5 girls, how many queues of 3 boys and 2 girls can be formed?"
+Options :
+6406531959841. 
+ 560
+6406531959842. 
+ 1200
+6406531959843. 
+ 67200
+6406531959844. 
+ 6720
+ 
+ 
+Question Number : 3 Question Id : 640653587433 Question Type : MCQ Is Question 
+Mandatory : No Calculator : None Response Time : N.A Think Time : N.A Minimum Instruction 
+Time : 0
+Correct Marks : 4
+Question Label : Multiple Choice Question
+A locker can be opened by 3 digit number between 000 to 999. A thief want to steal the locker. 
+"During the background check about the locker, he found that all the digits of the pass code are "
+unique and one of the digit is 4. What is the probability that the thief will open the locker?
+Options :
