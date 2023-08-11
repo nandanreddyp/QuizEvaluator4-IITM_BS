@@ -104,13 +104,12 @@ def Calculate(Course, Sub, Answ):
                 Smarks+=(count/total)*float(ques[1])
     marks = (Smarks/Tmarks)*100
     print("{:<10}: {:>3}".format(Course, marks))
-    
-
 def evaluate(akey, trans):
     Trans = open(trans,'r')
     Akey  = open(akey, 'r')
     # getting necessary info from Answers
-    Name  = Trans.readline()
+    Name  = Trans.readline().strip()
+    print(f'Hey {Name}, Your scores in each course is:')
     tkey  = Trans.readline()
     akey  = Akey.readline()
     if tkey!=akey:
