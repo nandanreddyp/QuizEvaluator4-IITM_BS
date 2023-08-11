@@ -1,19 +1,47 @@
-import fitz, csv
+import csv, subprocess, sys, tkinter
+try:
+    import fitz
+except ImportError: 
+    print("PyMuPDF is not installed. Installing now...")
+    try: subprocess.check_call([sys.executable, "-m", "pip", "install", "PyMuPDF"]); print("PyMuPDF installed successfully."); import fitz
+    except subprocess.CalledProcessError: print("Failed to install PyMuPDF.\nPlease use internet to install 'PyMuPDF' package."); sys.exit()
+
+
+def transCSV(file):
+    trans = open('./csv files/trans.txt','w',newline='')
+    write = csv.writer(trans)
+    #reading transcript pdf
+    doc = fitz.open(file)
+    text = ''.join([page.get_text() for page in doc])
+    text = [line.strip() for line in text.split('\n')][:-1]
+    # writing information
+    write.writerow([text[1]])
+    write.writerow([' '.join(text[3].split()[4:8])])
+    for i in range(11,len(text)):
+        if i%2!=0 and i!=len(text)-1 and text[i+1]!='Unanswered':
+            if text[i][:4]==text[i+1][:4]:
+                write.writerow([text[i],'$'.join(text[i+1].split(','))])
+            else:
+                write.writerow([text[i],text[i+1]])
+
 def answerCSV(file):
     def color(num):
-        return 'Green' if num == 32512 else 'Red' if num == 16711680 else 'Other'
-    data = open('./csv files/qp.txt','w',newline='')
-    write = csv.writer(data)
+        return 'Green' if num==32512 else 'Red' if num==16711680 else 'Other'
     doc = fitz.open(file)
-    #paper name saving
-    page = doc[0]
-    text = page.get_text().strip().split('\n')
-    for line in text:
-        if text.index(line)==7:
-            write.writerow([line[0:-8]])
-            break
+    answer = open('./csv files/key.txt','w',newline='')
+    write = csv.writer(answer)
+    #writing question paper id in key
+    text=doc[0].get_text().strip().split('\n')
+    write.writerow([' '.join(text[7].split()[2:6])])
     #questions data saving
-    Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
+    def add(Question_id,Question_marks,Question_type,COptions,WOptions):
+        if Question_id==None: return 
+        if Question_type in ['MSQ','MCQ']:
+            write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
+        elif Question_type in ['SA']:
+            write.writerow([Question_id,Question_marks,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
+        Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
+    Qcount=0;Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
     for i in range(len(doc)):
         page = doc[i]
         blocks = page.get_text("dict", flags=11)["blocks"]
@@ -21,23 +49,184 @@ def answerCSV(file):
             for l in b["lines"]:  # iterate through the text lines
                 for s in l["spans"]:  # iterate through the text spans
                     if s['size']==18 and s['text'][:5]!='Group':
+                        if Question_id!=None: 
+                            add(Question_id,Question_marks,Question_type,COptions,WOptions)
+                        Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
                         write.writerow([s['text']])
-                    if ('Question Id' in s['text'] and 'COMPREHENSION' not in s['text']):
+                    elif ('Question Id' in s['text'] and 'COMPREHENSION' not in s['text']):
+                        if Question_id!=None: add(Question_id,Question_marks,Question_type,COptions,WOptions)
+                        Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
+                        Qcount+=1
                         row = s['text'].split(' ')
                         Question_id = row[7];Question_marks=0;Question_type=row[11];COptions=[];WOptions=[]
-                    # options appending
-                    if Question_type=='SA' and color(s['color'])=='Green':
-                        COptions.append(s['text'])
-                    if s['text'][-2:]=='. ':
-                        if color(s['color'])=='Green':
-                            COptions.append(s['text'][:-2])
-                        elif color(s['color'])=='Red':
-                            WOptions.append(s['text'][:-2])
-                    if (i== len(doc)-1 and blocks.index(b)==len(blocks)-1) or (s['size']!=13.5 and COptions!=[]):
-                        if Question_type in ['MSQ','MCQ']:
-                            write.writerow([Question_id,Question_marks,Question_type,'$'.join(COptions),'$'.join(WOptions)])
-                        elif Question_type in ['SA']:
-                            write.writerow([Question_id,Question_marks,Question_type,':'.join(COptions[0].split(' to ')),'$'.join(WOptions)])
-                    
-                    
-answerCSV('./pdf files/IIT M.pdf')
+                    elif 'Correct Marks' in s['text']:
+                        Question_marks = s['text'].split()[3]
+                    elif color(s['color']) in ['Green','Red']:
+                        if len(s['text'])==len('6406531931004. ') and str(s['text'][:4])=='6406531931004. '[:4]:
+                            if color(s['color'])=='Green':
+                                COptions.append(s['text'][:-2])
+                            elif color(s['color'])=='Red':
+                                WOptions.append(s['text'][:-2])
+                        elif Question_type=='SA' and color(s['color'])=='Green':
+                            COptions.append(s['text'])
+                            add(Question_id,Question_marks,Question_type,COptions,WOptions)
+                            Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
+                    if (i== len(doc)-1 and blocks.index(b)==len(blocks)-1):
+                        add(Question_id,Question_marks,Question_type,COptions,WOptions)
+                        Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
+    # print(f'Total no of questions ():{Qcount}')
+
+def calculate(Course, SecQs, Resp):
+    if SecQs[0][0] not in Resp:
+        return None
+    Tmarks=0;Smarks=0
+    for ques in SecQs:
+        Tmarks+=float(ques[1])
+        if ques[0] in Resp:
+            if ques[2]=='SA':
+                if len(ques[3].split(':'))==1:
+                    if ques[3]==Resp[ques[0]]:
+                        Smarks+=float(ques[1])
+                else:
+                    # print(float(ques[3].split(':')[0]),float(Answ[ques[0]]),float(ques[3].split(':')[1]))
+                    if float(ques[3].split(':')[0]) <= float(Resp[ques[0]]) <= float(ques[3].split(':')[1]):
+                        Smarks+=float(ques[1])
+            else:
+                count=0;total=len(ques[3].split('$'))
+                for ans in Resp[ques[0]].split('$'):
+                    if ans in ques[4].split('$'):
+                        count=0; break
+                    if ans in ques[3].split('$'):
+                        count+=1
+                Smarks+=(count/total)*float(ques[1])
+    marks = (Smarks/Tmarks)*100
+    print("{:<10}: {:>3}".format(Course, marks))
+
+def evaluate():
+    key = open('./csv files/key.txt')
+    trans = open('./csv files/trans.txt')
+    Name = trans.readline().strip()
+    print(f'Hey, {Name}. Your scores in each subject are: ')
+    Akey = key.readline().strip(); Tkey = trans.readline().strip()
+    if Akey!=Tkey:
+        print(f'Answer key: {Akey} not matching with {Tkey}')
+        sys.exit()
+    Key = [ques.strip() for ques in key]
+    Resp = {}
+    for line in trans:
+        line = line.strip()
+        Resp[line.split(',')[0]]=line.split(',')[1]
+    #Grouping courses
+    Course=None;Answerkey=[]
+    for line in Key:
+        if len(line.split(','))==1:
+            if Course!=None:
+                calculate(Course, Answerkey, Resp)
+            Course=line;Answerkey=[]
+        elif Key.index(line)==len(Key)-1:
+            calculate(Course, Answerkey, Resp)
+        else:
+            Answerkey.append(line.split(','))
+
+# transCSV('./pdf files/POD23S2C31540008.pdf')
+# answerCSV('./pdf files/IIT M DIPLOMA AN3 EXAM QPD3.pdf')
+# evaluate()
+#------------------------------------------------------------------
+import tkinter as tk
+from tkinter import filedialog
+
+# window = tk.Tk()
+# window.geometry('400x300')
+# window.title('Quiz SCore Calculator')
+
+# frame = tk.Frame(window)
+
+# files_frame = tk.LabelFrame(frame, text='Files').grid(row=0,column=0)
+# first_label = tk.Label(files_frame, text='Select Answer key').grid(row=0,column=0)
+# second_label = tk.Label(files_frame, text='Select Transcript').grid(row=1,column=0)
+# first_file = tk.Button(files_frame, text='Select').grid(row=0,column=1)
+# second_file = tk.Button(files_frame, text='Select').grid(row=1,column=1)
+
+# submit_frame = tk.LabelFrame(frame, text='Submit').grid(row=1,column=0)
+# submit_label = tk.Label(submit_frame, text='Submit files: ').grid(row=0,column=0)
+# submit_button = tk.Button(submit_frame, text='Submit').grid(row=0,column=1)
+
+# window.mainloop()
+window = tkinter.Tk()
+window.title("Data Entry Form")
+
+frame = tkinter.Frame(window)
+frame.pack()
+
+# Saving User Info
+user_info_frame =tkinter.LabelFrame(frame, text="User Information")
+user_info_frame.grid(row= 0, column=0, padx=20, pady=10)
+
+first_name_label = tkinter.Label(user_info_frame, text="First Name")
+first_name_label.grid(row=0, column=0)
+last_name_label = tkinter.Label(user_info_frame, text="Last Name")
+last_name_label.grid(row=0, column=1)
+
+first_name_entry = tkinter.Entry(user_info_frame)
+last_name_entry = tkinter.Entry(user_info_frame)
+first_name_entry.grid(row=1, column=0)
+last_name_entry.grid(row=1, column=1)
+
+title_label = tkinter.Label(user_info_frame, text="Title")
+title_combobox = ttk.Combobox(user_info_frame, values=["", "Mr.", "Ms.", "Dr."])
+title_label.grid(row=0, column=2)
+title_combobox.grid(row=1, column=2)
+
+age_label = tkinter.Label(user_info_frame, text="Age")
+age_spinbox = tkinter.Spinbox(user_info_frame, from_=18, to=110)
+age_label.grid(row=2, column=0)
+age_spinbox.grid(row=3, column=0)
+
+nationality_label = tkinter.Label(user_info_frame, text="Nationality")
+nationality_combobox = ttk.Combobox(user_info_frame, values=["Africa", "Antarctica", "Asia", "Europe", "North America", "Oceania", "South America"])
+nationality_label.grid(row=2, column=1)
+nationality_combobox.grid(row=3, column=1)
+
+for widget in user_info_frame.winfo_children():
+    widget.grid_configure(padx=10, pady=5)
+
+# Saving Course Info
+courses_frame = tkinter.LabelFrame(frame)
+courses_frame.grid(row=1, column=0, sticky="news", padx=20, pady=10)
+
+registered_label = tkinter.Label(courses_frame, text="Registration Status")
+
+reg_status_var = tkinter.StringVar(value="Not Registered")
+registered_check = tkinter.Checkbutton(courses_frame, text="Currently Registered",
+                                       variable=reg_status_var, onvalue="Registered", offvalue="Not registered")
+
+registered_label.grid(row=0, column=0)
+registered_check.grid(row=1, column=0)
+
+numcourses_label = tkinter.Label(courses_frame, text= "# Completed Courses")
+numcourses_spinbox = tkinter.Spinbox(courses_frame, from_=0, to='infinity')
+numcourses_label.grid(row=0, column=1)
+numcourses_spinbox.grid(row=1, column=1)
+
+numsemesters_label = tkinter.Label(courses_frame, text="# Semesters")
+numsemesters_spinbox = tkinter.Spinbox(courses_frame, from_=0, to="infinity")
+numsemesters_label.grid(row=0, column=2)
+numsemesters_spinbox.grid(row=1, column=2)
+
+for widget in courses_frame.winfo_children():
+    widget.grid_configure(padx=10, pady=5)
+
+# Accept terms
+terms_frame = tkinter.LabelFrame(frame, text="Terms & Conditions")
+terms_frame.grid(row=2, column=0, sticky="news", padx=20, pady=10)
+
+accept_var = tkinter.StringVar(value="Not Accepted")
+terms_check = tkinter.Checkbutton(terms_frame, text= "I accept the terms and conditions.",
+                                  variable=accept_var, onvalue="Accepted", offvalue="Not Accepted")
+terms_check.grid(row=0, column=0)
+
+# Button
+button = tkinter.Button(frame, text="Enter data", command= enter_data)
+button.grid(row=3, column=0, sticky="news", padx=20, pady=10)
+ 
+window.mainloop()

@@ -27,7 +27,7 @@ functions.answerCSV(AnswerKey)
 print('\nSuccessfully read fies and made csv files\n')
 
 #EVALUATING TRANSCRIPT BY ANSWER KEY
-functions.evaluate('./csv files/qp.txt','./csv files/trans.txt')
+functions.evaluate()
 
 
 
