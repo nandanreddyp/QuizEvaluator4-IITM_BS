@@ -162,8 +162,9 @@ def Play():
     AnswerCSV(answerkey)
     Akey, Tkey = CheckCode()
     if Akey == Tkey: 
-        result = Evaluate(); 
-        for sub in result: print("{:<10}: {:>3}".format(sub[0], sub[1]))
+        result = Evaluate();
+        for sub in result:
+            print(f"{sub[0]:<20}: {round(sub[1],0):>3}")
         print('\nThankyou for Using, Contact t.me/nandanreddyp to give feedback or report bugs.')
     else: print('Answer key and Transcript\'s \'QuestionPaper Set code\' not matching!\nSelect correct files.')
     # deleting saved information about student
