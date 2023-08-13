@@ -1,1 +1,0 @@
-don't remove this folder, in main.py after reading pdf it creates csv files and after presenting scores it dletes them.
