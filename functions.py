@@ -168,3 +168,9 @@ def Calculate(Course, SecQs, Resp):
                 Smarks+=(count/total)*float(ques[1])
     marks = (Smarks/Tmarks)*100
     return (Course, marks)
+
+def clear():
+    trans = open('./csv files/trans.txt','w',newline='')
+    trans.writelines('')
+    answ = open('./csv files/key.txt','w',newline='')
+    answ.writelines('')
