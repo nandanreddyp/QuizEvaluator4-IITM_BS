@@ -1,17 +1,47 @@
-import csv, subprocess, sys
+## importing required modules and libraries
+import sys, subprocess, csv
 try:
     import fitz
-except ImportError:
+except ImportError: 
     print("PyMuPDF is not installed. Installing now...")
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "PyMuPDF"])
-        print("PyMuPDF installed successfully.")
-        import fitz
-    except subprocess.CalledProcessError:
-        print("Failed to install PyMuPDF.\nPlease use internet to resolve this issue.")
-        sys.exit()
+    try: subprocess.check_call([sys.executable, "-m", "pip", "install", "PyMuPDF"]); print("PyMuPDF installed successfully."); import fitz
+    except subprocess.CalledProcessError: print("Failed to install PyMuPDF.\nPlease use internet to install 'PyMuPDF' package."); sys.exit()
+try:
+    from tkinter import filedialog
+except ImportError:
+    print('tkinter is not installed. Installing now...')
+    try: subprocess.check_call([sys.executable, "-m", "pip", "install", "tkinter"]); print('tkinker intalled successfully.'); from tkinter import filedialog
+    except subprocess.CalledProcessError: print('Failed to install tkinter.\nPlease use internet to install \'Tkinter\' package.'); sys.exit()
 
-def transCSV(file):
+filepaths = {'answerkey':None,'transcript':None}
+
+## required functions for task
+def GetFiles():
+    global filepaths
+    print('\nSelect Answer Key pdf file')
+    AnswerKey = filedialog.askopenfilename(title='Answer Key',filetypes=[('Answer Key', '*.pdf')])
+    print('selected file :',AnswerKey)
+    print('Select Transcript pdf file')
+    Transcript = filedialog.askopenfilename(title='Transcript',filetypes=[('Transcript', '*.pdf')])
+    print('selected file :',Transcript,'\n')
+    if FileCheck(AnswerKey,'A') and FileCheck(Transcript,'T'):
+        filepaths['answerkey']=AnswerKey
+        filepaths['transcript']=Transcript
+        return filepaths
+    else: print('Please select CORRECT Answer Key and Transcript!'); sys.exit()
+
+def FileCheck(file, K):
+    try:
+        doc = fitz.open(file)
+        text = doc[0].get_text().split('\n')
+        if K=='A':
+            if text[0] == 'Indian Institute of Technology, Madras - BS in Data Science and Applications': return True; return False
+        elif K=='T':
+            if text[0] == 'Name' and text[2] == 'QP Set': return True; return False
+    except:
+        return False
+
+def TransCSV(file):
     trans = open('./csv files/trans.txt','w',newline='')
     write = csv.writer(trans)
     #reading transcript pdf
@@ -28,7 +58,7 @@ def transCSV(file):
             else:
                 write.writerow([text[i],text[i+1]])
 
-def answerCSV(file):
+def AnswerCSV(file):
     def color(num):
         return 'Green' if num==32512 else 'Red' if num==16711680 else 'Other'
     doc = fitz.open(file)
@@ -80,7 +110,40 @@ def answerCSV(file):
                         Question_id=None;Question_marks=None;Question_type=None;COptions=[];WOptions=[]
     # print(f'Total no of questions ():{Qcount}')
 
-def calculate(Course, SecQs, Resp):
+def CheckCode():
+    key = open('./csv files/key.txt')
+    trans = open('./csv files/trans.txt')
+    Name = trans.readline() # to remove first line
+    Akey = key.readline().strip(); Tkey = trans.readline().strip() #selecting QP set codes
+    return (Akey, Tkey)
+
+def Evaluate():
+    key = open('./csv files/key.txt')
+    trans = open('./csv files/trans.txt')
+    Name = trans.readline().strip()
+    Akey = key.readline().strip(); Tkey = trans.readline().strip()
+    if Akey!=Tkey:
+        return 'keys not matching'
+    Key = [ques.strip() for ques in key]
+    Resp = {}
+    for line in trans:
+        line = line.strip()
+        Resp[line.split(',')[0]]=line.split(',')[1]
+    print(f'Hey, {Name}. Your scores in each subject are: ')
+    #Grouping courses and evaluating
+    Course=None;Answerkey=[];result=[]
+    for line in Key:
+        if len(line.split(','))==1 or Key.index(line)==len(Key)-1:
+            if Course!=None:
+                res=(Calculate(Course, Answerkey, Resp))
+                if res!=None:
+                    result.append(res)
+            Course=line;Answerkey=[]
+        else:
+            Answerkey.append(line.split(','))
+    return result
+
+def Calculate(Course, SecQs, Resp):
     if SecQs[0][0] not in Resp:
         return None
     Tmarks=0;Smarks=0
@@ -104,32 +167,4 @@ def calculate(Course, SecQs, Resp):
                         count+=1
                 Smarks+=(count/total)*float(ques[1])
     marks = (Smarks/Tmarks)*100
-    print("{:<10}: {:>3}".format(Course, marks))
-
-def evaluate():
-    key = open('./csv files/key.txt')
-    trans = open('./csv files/trans.txt')
-    Name = trans.readline().strip()
-    print(f'Hey, {Name}. Your scores in each subject are: ')
-    Akey = key.readline().strip(); Tkey = trans.readline().strip()
-    if Akey!=Tkey:
-        print(f'Answer key: {Akey} not matching with {Tkey}')
-        sys.exit()
-    Key = [ques.strip() for ques in key]
-    Resp = {}
-    for line in trans:
-        line = line.strip()
-        Resp[line.split(',')[0]]=line.split(',')[1]
-    #Grouping courses
-    Course=None;Answerkey=[]
-    for line in Key:
-        if len(line.split(','))==1:
-            if Course!=None:
-                calculate(Course, Answerkey, Resp)
-            Course=line;Answerkey=[]
-        elif Key.index(line)==len(Key)-1:
-            calculate(Course, Answerkey, Resp)
-        else:
-            Answerkey.append(line.split(','))
-        
-        
+    return (Course, marks)
