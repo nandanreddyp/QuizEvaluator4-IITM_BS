@@ -29,7 +29,7 @@ def GetFiles():
         filepaths['transcript']=Transcript
         return filepaths
     else: print('Please select CORRECT Answer Key and Transcript!'); sys.exit()
-
+# no problem below
 def FileCheck(file, K):
     try:
         doc = fitz.open(file)
@@ -50,7 +50,7 @@ def TransCSV(file):
     text = [line.strip() for line in text.split('\n')][:-1]
     # writing information
     write.writerow([text[1]])
-    write.writerow([' '.join(text[3].split()[4:8])])
+    write.writerow([text[3][text[3].index('QP'):]])
     for i in range(11,len(text)):
         if i%2!=0 and i!=len(text)-1 and text[i+1]!='Unanswered':
             if text[i][:4]==text[i+1][:4]:
@@ -66,7 +66,10 @@ def AnswerCSV(file):
     write = csv.writer(answer)
     #writing question paper id in key
     text=doc[0].get_text().strip().split('\n')
-    write.writerow([' '.join(text[7].split()[2:6])])
+    for x in text: 
+        if 'IIT M' in x and 'QP' in x:
+            write.writerow([x[x.index('QP'):].split()[0]])
+            break
     #questions data saving
     def add(Question_id,Question_marks,Question_type,COptions,WOptions):
         if Question_id==None: return 
