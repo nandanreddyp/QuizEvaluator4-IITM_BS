@@ -32,12 +32,17 @@ def GetFiles():
 # no problem below
 def FileCheck(file, K):
     try:
+        import fitz
         doc = fitz.open(file)
         text = doc[0].get_text().split('\n')
+        print(text)
         if K=='A':
-            if text[0] == 'Indian Institute of Technology, Madras - BS in Data Science and Applications': return True; return False
+            if 'Indian Institute of Technology, Madras - BS in Data Science and Applications' in text:
+                return True
         elif K=='T':
-            if text[0] == 'Name' and text[2] == 'QP Set': return True; return False
+            if 'Name' in text and 'QP Set' in text:
+                return True
+        return False
     except:
         return False
 
